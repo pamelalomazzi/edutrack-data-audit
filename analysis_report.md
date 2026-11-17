@@ -1,78 +1,85 @@
-# Informe de Análisis y Auditoría de Datos — EduTrack (Q3)
+# Informe de Análisis y Auditoría de Datos — EduTrack (Esquema Normalizado)
 
-## Inscripciones en 'Intro to Python'
-Resultado: 5
-- Emily Watson (emily.watson@student.edutrack.com) — 85%
-- Klaus Weber (klaus.weber@student.edutrack.com) — 92%
-- Marco Rossi (marco.rossi@student.edutrack.com) — 88%
-- James Miller (james.miller@test.com) — 30% *(Eliminado en fase de limpieza)*
-- Priya Sharma (priya.sharma@student.edutrack.com) — 55%
+## Consultas — INNER JOIN
 
-## Posibles Abandonos (Completion < 10%)
-Resultado: 4
-- Lucia Fernandes — Web Design Basics (5%)
-- Lucia Fernandes — Digital Marketing 101 (3%)
-- Yuki Nakamura — UI/UX Fundamentals (0%)
-- Pierre Dubois — UI/UX Fundamentals (0%)
+### 1. Listado de todas las inscripciones (Estudiante, Curso y Porcentaje de Completado)
+Resultado: 16 inscripciones
+- **Emily Watson** — Intro to Python (85%)
+- **Emily Watson** — Web Design Basics (60%)
+- **Klaus Weber** — Intro to Python (92%)
+- **Klaus Weber** — Data Analysis with SQL (78%)
+- **Lucia Fernandes** — Web Design Basics (5%)
+- **Lucia Fernandes** — Digital Marketing 101 (3%)
+- **Marco Rossi** — Advanced Python (95%)
+- **Marco Rossi** — Intro to Python (88%)
+- **Yuki Nakamura** — Data Analysis with SQL (45%)
+- **Yuki Nakamura** — UI/UX Fundamentals (0%)
+- **Pierre Dubois** — UI/UX Fundamentals (0%)
+- **Priya Sharma** — Digital Marketing 101 (70%)
+- **Priya Sharma** — Intro to Python (55%)
+- **Pierre Dubois** — Data Analysis with SQL (20%)
+- **Emily Watson** — Advanced Python (40%)
+- **Lucia Fernandes** — Advanced Python (0%)
 
-## Inscripciones sin Instructor Asignado (NULL)
-Resultado: 2
-- Yuki Nakamura — UI/UX Fundamentals
-- Pierre Dubois — UI/UX Fundamentals
+### 2. Estudiantes que han aprobado al menos un curso
+Resultado: 4 estudiantes (6 registros de aprobación en total)
+- **Emily Watson** (`emily.watson@student.edutrack.com`) — Intro to Python
+- **Klaus Weber** (`klaus.weber@student.edutrack.com`) — Intro to Python
+- **Klaus Weber** (`klaus.weber@student.edutrack.com`) — Data Analysis with SQL
+- **Marco Rossi** (`marco.rossi@student.edutrack.com`) — Advanced Python
+- **Marco Rossi** (`marco.rossi@student.edutrack.com`) — Intro to Python
+- **Priya Sharma** (`priya.sharma@student.edutrack.com`) — Digital Marketing 101
 
-## Top 5 Estudiantes con Mayor Progreso Sin Aprobar
+### 3. Porcentaje de completado medio por instructor
 Resultado:
-- Emily Watson — Web Design Basics: 60%
-- Priya Sharma — Intro to Python: 55%
-- Yuki Nakamura — Data Analysis with SQL: 45%
-- Emily Watson — Advanced Python: 40%
-- James Miller — Intro to Python: 30% *(Antes de la limpieza)*
+- **Marta López**: 66.14%
+- **Carlos Vega**: 40.00%
+- **Lucia Prades**: 36.50%
+- **Pending assignment**: 0.00%
 
-## Inscripciones del Último Año
-Resultado: 6
-- Lucia Fernandes — Advanced Python (2025-04-01)
-- Emily Watson — Advanced Python (2025-03-05)
-- Pierre Dubois — Data Analysis with SQL (2025-02-20)
-- Priya Sharma — Intro to Python (2025-01-10)
-- Priya Sharma — Digital Marketing 101 (2024-12-01)
-- Pierre Dubois — UI/UX Fundamentals (2024-11-05)
 
-## Registro de Inscripción Faltante Insertado
-Resultado: 1 registro añadido (ID: 18)
-- Estudiante: Lucia Fernandes (ID: 3)
-- Curso: Advanced Python (2025-04-01)
+## Consultas — LEFT JOIN (Detección de datos faltantes)
 
-## Actualización de Instructores Pendientes
-Resultado: 2 filas actualizadas a 'Pending assignment'
+### 4. Estudiantes sin ninguna inscripción
+Resultado: 1 estudiante
+- **Giulia Romano** (`giulia.romano@student.edutrack.com`) — Fecha de registro: 2024-05-07
 
-## Registros de Prueba Eliminados (@test.com)
-Resultado: 2 filas eliminadas
-- James Miller (james.miller@test.com) — ID 13
-- Alex Chen (alex.chen@test.com) — ID 14
+### 5. Cursos sin ninguna inscripción
+Resultado: 1 curso
+- **Email Campaigns** (Categoría: Marketing, Instructor: Lucia Prades)
 
-## Inscripciones por Categoría
+
+## Consultas — Agregación entre tablas
+
+### 6. Estudiantes inscritos en más de un curso
+Resultado: 7 estudiantes
+- **Lucia Fernandes**: 3 cursos
+- **Emily Watson**: 3 cursos
+- **Marco Rossi**: 2 cursos
+- **Klaus Weber**: 2 cursos
+- **Priya Sharma**: 2 cursos
+- **Pierre Dubois**: 2 cursos
+- **Yuki Nakamura**: 2 cursos
+
+### 7. Ingresos totales por categoría (según precio actual en `courses`)
 Resultado:
-- Programming: 6
-- Design: 4
-- Data: 3
-- Marketing: 3
+- **Programming**: $409.93
+- **Data**: $179.97
+- **Design**: $169.96
+- **Marketing**: $59.98
 
-## Promedio de Completado por Curso
+### 8. Número de estudiantes inscritos actualmente por instructor
 Resultado:
-- UI/UX Fundamentals: 0.0%
-- Web Design Basics: 25.0%
-- Digital Marketing 101: 36.5%
-- Data Analysis with SQL: 52.3%
-- Advanced Python: 67.5%
-- Intro to Python: 70.0%
+- **Marta López**: 6 estudiantes
+- **Carlos Vega**: 3 estudiantes
+- **Lucia Prades**: 2 estudiantes
+- **Pending assignment**: 2 estudiantes
 
-## Cursos con Más de 3 Inscripciones
-Resultado:
-- Intro to Python: 4 inscripciones *(tras eliminar cuentas de prueba)*
 
-## Ingresos Totales por Categoría
-Resultado:
-- Programming: $339.94
-- Data: $179.97
-- Design: $124.97
-- Marketing: $79.97
+## Consultas — Integridad de datos
+
+### 9. Comprobación de registros huérfanos en `student_id`
+Resultado: 0 registros huérfanos (La integridad referencial es correcta)
+
+### 10. Comprobación de registros huérfanos en `course_id`
+Resultado: 0 registros huérfanos (La integridad referencial es correcta)

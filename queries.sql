@@ -1,92 +1,113 @@
 -- ============================================================
--- EduTrack — Auditoría de Base de Datos (Q3)
--- Consultas de Auditoría, Corrección y Agregación
+-- EduTrack — Auditoría de Base de Datos (Tablas Relacionadas)
 -- ============================================================
 
 -- ------------------------------------------------------------
--- Consultas — Lectura y filtrado
+-- Consultas — INNER JOIN
 -- ------------------------------------------------------------
 
--- 1. Listar todas las inscripciones del curso 'Intro to Python'
-SELECT student_name, student_email, completion_percentage
-FROM enrollments
-WHERE course_title = 'Intro to Python';
+-- 1. Listar todas las inscripciones mostrando el nombre completo del estudiante, el título del curso y su porcentaje de completado
+SELECT 
+    s.name AS student_name, 
+    c.title AS course_title, 
+    e.completion_percentage
+FROM enrollments e
+INNER JOIN students s ON e.student_id = s.id
+INNER JOIN courses c ON e.course_id = c.id;
 
--- 2. Obtener inscripciones con completion_percentage < 10 (posibles abandonos)
-SELECT *
-FROM enrollments
-WHERE completion_percentage < 10;
+-- 2. Mostrar el nombre y email de los estudiantes que han aprobado al menos un curso, junto con el título del curso que aprobaron
+SELECT 
+    s.name AS student_name, 
+    s.email AS student_email, 
+    c.title AS course_title
+FROM enrollments e
+INNER JOIN students s ON e.student_id = s.id
+INNER JOIN courses c ON e.course_id = c.id
+WHERE e.passed = TRUE;
 
--- 3. Encontrar inscripciones donde el campo instructor sea NULL
-SELECT *
-FROM enrollments
-WHERE instructor IS NULL;
-
--- 4. Top 5 estudiantes con mayor completion_percentage que todavía no han aprobado (passed = false)
-SELECT *
-FROM enrollments
-WHERE passed = FALSE
-ORDER BY completion_percentage DESC
-LIMIT 5;
-
--- 5. Mostrar todas las inscripciones creadas en el último año, ordenadas por enrollment_date descendente
-SELECT *
-FROM enrollments
-WHERE enrollment_date >= '2024-04-01'
-ORDER BY enrollment_date DESC;
-
-
--- ------------------------------------------------------------
--- Consultas — Corrección de datos
--- ------------------------------------------------------------
-
--- 6. INSERT del registro de inscripción faltante
-INSERT INTO enrollments (
-    id, student_id, student_name, student_email, 
-    course_id, course_title, category, 
-    enrollment_date, completion_percentage, passed, 
-    monthly_fee_paid, instructor
-) 
-VALUES (
-    18, 3, 'Lucia Fernandes', 'lucia.fernandes@student.edutrack.com', 
-    5, 'Advanced Python', 'Programming', 
-    '2025-04-01', 0, FALSE, 
-    69.99, 'Carlos Vega'
-);
-
--- 7. UPDATE: Asignar 'Pending assignment' a inscripciones con instructor NULL
-UPDATE enrollments
-SET instructor = 'Pending assignment'
-WHERE instructor IS NULL;
-
--- 8. DELETE: Eliminar inscripciones ligadas a las cuentas de prueba (@test.com)
-DELETE FROM enrollments
-WHERE student_email LIKE '%@test.com';
+-- 3. Calcular el porcentaje de completado medio por instructor, ordenado de mayor a menor
+SELECT 
+    c.instructor_name, 
+    ROUND(AVG(e.completion_percentage), 2) AS avg_completion
+FROM enrollments e
+INNER JOIN courses c ON e.course_id = c.id
+GROUP BY c.instructor_name
+ORDER BY avg_completion DESC;
 
 
 -- ------------------------------------------------------------
--- Consultas — Agregación e informe
+-- Consultas — LEFT JOIN (detección de datos faltantes)
 -- ------------------------------------------------------------
 
--- 9. Contar el número de inscripciones agrupado por categoría
-SELECT category, COUNT(*) AS total_enrollments
-FROM enrollments
-GROUP BY category;
+-- 4. Encontrar todos los estudiantes que no tienen ninguna inscripción
+SELECT 
+    s.id, 
+    s.name, 
+    s.email, 
+    s.signup_date
+FROM students s
+LEFT JOIN enrollments e ON s.id = e.student_id
+WHERE e.id IS NULL;
 
--- 10. Calcular el promedio de completion_percentage por curso, ordenado de menor a mayor
-SELECT course_title, AVG(completion_percentage) AS avg_completion
-FROM enrollments
-GROUP BY course_title
-ORDER BY avg_completion ASC;
+-- 5. Encontrar todos los cursos que no tienen ninguna inscripción
+SELECT 
+    c.id, 
+    c.title, 
+    c.category, 
+    c.instructor_name
+FROM courses c
+LEFT JOIN enrollments e ON c.id = e.course_id
+WHERE e.id IS NULL;
 
--- 11. Mostrar únicamente los cursos con más de 3 inscripciones (usar HAVING)
-SELECT course_title, COUNT(*) AS total_enrollments
-FROM enrollments
-GROUP BY course_title
-HAVING COUNT(*) > 3;
 
--- 12. Calcular los ingresos totales (SUM de monthly_fee_paid) agrupados por categoría, ordenados de mayor a menor
-SELECT category, SUM(monthly_fee_paid) AS total_revenue
-FROM enrollments
-GROUP BY category
+-- ------------------------------------------------------------
+-- Consultas — Agregación entre tablas
+-- ------------------------------------------------------------
+
+-- 6. Contar cuántos cursos tiene inscrito cada estudiante; mostrar solo los estudiantes inscritos en más de un curso
+SELECT 
+    s.id, 
+    s.name, 
+    COUNT(e.course_id) AS total_courses
+FROM students s
+INNER JOIN enrollments e ON s.id = e.student_id
+GROUP BY s.id, s.name
+HAVING COUNT(e.course_id) > 1
+ORDER BY total_courses DESC;
+
+-- 7. Calcular los ingresos totales por categoría usando el precio del curso de la tabla courses (monthly_fee)
+SELECT 
+    c.category, 
+    SUM(c.monthly_fee) AS total_revenue
+FROM enrollments e
+INNER JOIN courses c ON e.course_id = c.id
+GROUP BY c.category
 ORDER BY total_revenue DESC;
+
+-- 8. Mostrar cada instructor junto con el número de estudiantes inscritos actualmente en sus cursos
+SELECT 
+    c.instructor_name, 
+    COUNT(DISTINCT e.student_id) AS total_students
+FROM courses c
+LEFT JOIN enrollments e ON c.id = e.course_id
+GROUP BY c.instructor_name
+ORDER BY total_students DESC;
+
+
+-- ------------------------------------------------------------
+-- Consultas — Integridad de datos
+-- ------------------------------------------------------------
+
+-- 9. Comprobar si hay inscripciones cuyo student_id no corresponde a ningún estudiante existente (registros huérfanos)
+SELECT 
+    e.*
+FROM enrollments e
+LEFT JOIN students s ON e.student_id = s.id
+WHERE s.id IS NULL;
+
+-- 10. Comprobar si hay inscripciones cuyo course_id no corresponde a ningún curso existente (registros huérfanos)
+SELECT 
+    e.*
+FROM enrollments e
+LEFT JOIN courses c ON e.course_id = c.id
+WHERE c.id IS NULL;
